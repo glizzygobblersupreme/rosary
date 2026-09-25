@@ -1,10 +1,10 @@
-# Builds the app and publishes dist/ to GitHub Pages on every push to main.
+# Builds the app and publishes dist/ to GitHub Pages on every push to master.
 # Pages must be set to deploy from GitHub Actions (Settings → Pages → Source).
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 permissions:

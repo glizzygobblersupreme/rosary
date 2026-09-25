@@ -29,7 +29,7 @@ Settings and today's place are stored in the phone's browser, per phone.
 
 ## Publishing
 
-Every push to `main` runs `.github/workflows/deploy.yml`: tests, build, deploy to
+Every push to `master` runs `.github/workflows/deploy.yml`: tests, build, deploy to
 GitHub Pages. The repository must have Pages set to deploy from GitHub Actions
 (Settings → Pages → Source). The app is built for the `/rosary/` path; change
 `BASE` in `vite.config.ts` if the repository is renamed or a custom domain is used.
