@@ -20,11 +20,14 @@ interface Props {
   onStartAt: (seg: number) => void;
   onContinue: () => void;
   onOpenSettings: () => void;
+  /** A newer build is downloaded and waiting. */
+  updateReady: boolean;
+  onUpdate: () => void;
 }
 
 const SET_ORDER: SetId[] = ['joyful', 'luminous', 'sorrowful', 'glorious'];
 
-export default function Home({ progress, todaysSet, segments, schedule, ...on }: Props) {
+export default function Home({ progress, todaysSet, segments, schedule, updateReady, ...on }: Props) {
   const set = SETS[progress.setId];
   const midway = progress.started && !progress.done;
   const dateLine = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
@@ -101,6 +104,11 @@ export default function Home({ progress, todaysSet, segments, schedule, ...on }:
         >
           {midway ? `Continue at ${segments[progress.seg].label.toLowerCase()}` : progress.done ? 'Pray again' : 'Begin'}
         </Button>
+        {updateReady && (
+          <Button variant="text" size="small" fullWidth onClick={on.onUpdate} sx={{ mt: 1 }}>
+            A new version is ready. Update
+          </Button>
+        )}
       </Box>
     </Box>
   );

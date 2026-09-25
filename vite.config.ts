@@ -2,17 +2,25 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// base './' keeps every asset path relative, so dist/ works from the LAN
-// server root and from a sub-path on static hosting alike. The service worker
-// only registers on HTTPS/localhost; over plain-http LAN it is simply inert.
+// Hosted on GitHub Pages at https://glizzygobblersupreme.github.io/rosary/
+// (change BASE if the repo is renamed or a custom domain is used). The service
+// worker precaches everything, so after the first visit the app opens and runs
+// without the network; a new version is picked up on a later visit.
+const BASE = '/rosary/';
+
 export default defineConfig({
-  base: './',
+  base: BASE,
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // A new version waits until you choose to update (a line on the start
+      // screen), so nothing ever reloads under you mid-prayer.
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
+        id: BASE,
+        start_url: BASE,
+        scope: BASE,
         name: 'Rosary',
         short_name: 'Rosary',
         description: 'Pray and learn the Rosary for each day',
@@ -33,6 +41,5 @@ export default defineConfig({
       },
     }),
   ],
-  server: { port: 5173, proxy: { '/api': 'http://localhost:5180' } },
   test: { environment: 'node' },
 });

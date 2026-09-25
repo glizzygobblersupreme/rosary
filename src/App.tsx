@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import { SETS, type SetId } from './data/mysteries';
 import { setForDate } from './data/schedule';
 import Home from './components/Home';
@@ -11,7 +12,6 @@ import { useStoredState } from './hooks/useStoredState';
 import { useToday } from './hooks/useToday';
 import { useWakeLock } from './hooks/useWakeLock';
 import { advance, back, clamp, fresh, jump, nextSegment, prevSegment, restore, type Progress } from './logic/progress';
-import { loadRemote, saveRemote } from './logic/remoteStore';
 import { buildSegments, locate } from './logic/sequence';
 import { DEFAULT_SETTINGS, type Settings } from './logic/settings';
 import { makeTheme } from './theme';
@@ -38,35 +38,12 @@ export default function App() {
   const [mapOpen, setMapOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // The server's copy is the one that survives an address change or a new phone,
-  // so it wins over what this browser remembered. Writes wait until it has arrived.
-  const [synced, setSynced] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    loadRemote().then((remote) => {
-      if (cancelled) return;
-      if (remote) {
-        if (remote.settings) setSettings(reviveSettings(remote.settings));
-        if (remote.progress) {
-          const p = restore(remote.progress, today, setForDate(new Date(), reviveSettings(remote.settings)));
-          setProgress(p);
-          if (p.started && !p.done) setView('pray');
-        }
-      }
-      setSynced(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-    // once, on start
-  }, []);
-
-  useEffect(() => {
-    if (synced) saveRemote({ settings });
-  }, [synced, settings]);
-  useEffect(() => {
-    if (synced) saveRemote({ progress: stored });
-  }, [synced, stored]);
+  // Offline-first: the service worker serves the cached app; when a newer build
+  // has been fetched in the background, the start screen offers to switch.
+  const {
+    needRefresh: [updateReady],
+    updateServiceWorker,
+  } = useRegisterSW();
 
   // A new day: yesterday's place no longer applies.
   useEffect(() => {
@@ -162,6 +139,8 @@ export default function App() {
           onStartAt={startAt}
           onContinue={() => setView('pray')}
           onOpenSettings={() => setSettingsOpen(true)}
+          updateReady={updateReady}
+          onUpdate={() => updateServiceWorker(true)}
         />
       ) : (
         <SegmentScreen
