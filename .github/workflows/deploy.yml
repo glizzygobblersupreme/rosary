@@ -38,8 +38,11 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # The auto-created github-pages environment only allows deploys from the
+    # branch that was the default when Pages was enabled (main). This one has
+    # no such rule.
     environment:
-      name: github-pages
+      name: pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
